@@ -1,3 +1,25 @@
+getgenv().AntiSpy = {
+	["Sounds"] = {
+		["Normal"] = "rbxassetid://4590662766",
+		["Warning"] = "rbxassetid://1570162306"
+	},
+	["Whitelist"] = {},
+	["Blacklist"] = {
+		["Players"] = {
+			3053271710
+		},
+		["Accessories"] = {
+			"Pal Hair"
+		}
+	},
+	["Kick"] = {
+		["Enabled"] = true,
+		["MaxFlags"] = 3,
+		["Delay"] = 2
+	},
+	["MaxAbsence"] = 60
+}
+
 local AntiSpy = loadstring(game:HttpGet('https://raw.githubusercontent.com/Crvstal8100/AntiSpy/main/Main.lua'))()
 
 --[[
