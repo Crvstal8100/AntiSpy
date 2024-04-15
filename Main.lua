@@ -1,7 +1,7 @@
 local AntiSpy = {}
 local Players = {}
 
-local SimpleNotification = require(game.ReplicatedStorage.SimpleNotification)
+local SimpleNotification = loadstring(game:HttpGet('https://raw.githubusercontent.com/Crvstal8100/SimpleNotify/main/UILibrary.lua'))()
 local UI = SimpleNotification:Create("SimpleNotify")
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
