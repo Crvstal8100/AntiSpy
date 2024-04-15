@@ -200,7 +200,7 @@ for i, v in pairs(game:GetService("Players"):GetPlayers()) do
 	
 	task.delay(2, function()
 		for i, v in pairs(game:GetService("Players"):GetPlayers()) do
-			if CheckBlacklist(v) == true and v.UserId ~= game:GetService("Players").LocalPlayer.UserId then
+			if CheckBlacklist(v) == true and v ~= game:GetService("Players").LocalPlayer then
 				UI:Notify(string.format('There is a <font color="rgb(255, 74, 74)">blacklisted</font> player in your server!:\n<font color="rgb(255, 74, 74)">%s (%d)</font>', v.Name, v.UserId), 15, getgenv().AntiSpy["Sounds"]["Warning"])
 				
 				AntiSpy:AddFlag(v, "Blacklisted_Player")	
@@ -208,7 +208,7 @@ for i, v in pairs(game:GetService("Players"):GetPlayers()) do
 		end
 		
 		task.delay(2, function()
-			if v.Character and v.Character:WaitForChild("Humanoid").Health ~= 0 then
+			if v ~= game:GetService("Players").LocalPlayer and v.Character:WaitForChild("Humanoid").Health ~= 0 then
 				local Accessories = AntiSpy:GetAccessories(v)
 
 				for _, Accessory in pairs(Accessories) do
@@ -223,15 +223,17 @@ for i, v in pairs(game:GetService("Players"):GetPlayers()) do
 			v.CharacterAdded:Connect(function(character)
 				v.CharacterAppearanceLoaded:Wait()
 
-				local Accessories = AntiSpy:GetAccessories(v)
+                if v ~= game:GetService("Players").LocalPlayer then
+                    local Accessories = AntiSpy:GetAccessories(v)
 
-				for _, Accessory in pairs(Accessories) do
-					if CheckBlacklist(Accessory) == true then
-						AntiSpy:AddFlag(v, "Blacklisted_Accessory")
-						
-						UI:Notify(string.format('%s (%d) has a <font color="rgb(255, 74, 74)">blacklisted</font> accessory on!:\n<font color="rgb(255, 74, 74)">%s</font>', v.Name, v.UserId, Accessory.Name))
-					end
-				end
+                    for _, Accessory in pairs(Accessories) do
+                        if CheckBlacklist(Accessory) == true then
+                            AntiSpy:AddFlag(v, "Blacklisted_Accessory")
+                            
+                            UI:Notify(string.format('%s (%d) has a <font color="rgb(255, 74, 74)">blacklisted</font> accessory on!:\n<font color="rgb(255, 74, 74)">%s</font>', v.Name, v.UserId, Accessory.Name))
+                        end
+                    end
+                end
 			end)
 		end)
 	end)
@@ -295,17 +297,19 @@ OnMessageDoneFiltering.OnClientEvent:Connect(function(messageData)
 		["Time"] = tick()
 	}
 
-	if CheckMention(Players[player.UserId]["LastMessage"]["Message"]) == true then
-		if CheckBlacklist(player) == true and player ~= game:GetService("Players").LocalPlayer then
-			AntiSpy:AddFlag(player, "Mention_Player")
-			
-			UI:Notify(string.format('A <font color="rgb(255, 74, 74)">blacklisted</font> player has mentioned you!:\n<font color="rgb(255, 74, 74)">%s (%d)</font>\n<b><font color="rgb(255, 74, 74)">%s</font>', player.Name, player.UserId, Players[player.UserId]["LastMessage"]["Message"]), 15, getgenv().AntiSpy["Sounds"]["Warning"])
-		else
-			AntiSpy:AddFlag(player, "Mention_Player")
-			
-			UI:Notify(string.format('%s (%d) has mentioned you!:\n%s', player.Name, player.UserId, Players[player.UserId]["LastMessage"]["Message"]), 5, getgenv().AntiSpy["Sounds"]["Normal"])
-		end
-	end
+    if player ~= game:GetService("Players").LocalPlayer then
+        if CheckMention(Players[player.UserId]["LastMessage"]["Message"]) == true then
+            if CheckBlacklist(player) == true and player ~= game:GetService("Players").LocalPlayer then
+                AntiSpy:AddFlag(player, "Mention_Player")
+                
+                UI:Notify(string.format('A <font color="rgb(255, 74, 74)">blacklisted</font> player has mentioned you!:\n<font color="rgb(255, 74, 74)">%s (%d)</font>\n<b><font color="rgb(255, 74, 74)">%s</font>', player.Name, player.UserId, Players[player.UserId]["LastMessage"]["Message"]), 15, getgenv().AntiSpy["Sounds"]["Warning"])
+            else
+                AntiSpy:AddFlag(player, "Mention_Player")
+                
+                UI:Notify(string.format('%s (%d) has mentioned you!:\n%s', player.Name, player.UserId, Players[player.UserId]["LastMessage"]["Message"]), 5, getgenv().AntiSpy["Sounds"]["Normal"])
+            end
+        end
+    end
 end)
 
 local Rah = false
@@ -340,50 +344,52 @@ game:GetService("RunService").RenderStepped:Connect(function()
 			end
 			
 			if PlayerInfo["LastCFrame"] and v.Character and v.Character.PrimaryPart then
-				if not PlayerInfo["LastCFrame"]["CFrame"] and not PlayerInfo["LastCFrame"]["Time"] then
-					PlayerInfo["LastCFrame"] = {
-						["CFrame"] = nil,
-						["Time"] = nil
-					}
-				end
-				
-				if CheckBlacklist(v) then
-					if PlayerInfo["LastCFrame"]["CFrame"] ~= RoundCFrame(CFrame.new(v.Character.PrimaryPart.Position)) then
-						PlayerInfo["LastCFrame"] = {
-							["CFrame"] = RoundCFrame(CFrame.new(v.Character.PrimaryPart.Position)),
-							["Time"] = tick()
-						}
-					else
-						if CheckActivity(PlayerInfo) == false then
-							local Time = GetTime(PlayerInfo["LastCFrame"]["Time"])
-							PlayerInfo["LastCFrame"] = {
-								["CFrame"] = RoundCFrame(CFrame.new(v.Character.PrimaryPart.Position)),
-								["Time"] = tick()
-							}
-							UI:Notify(string.format('A <font color="rgb(255, 74, 74)">blacklisted</font> player has been absent for the maximum amount of seconds!\n<font color="rgb(255, 74, 74)">%s (%d)</font>\n<font color="rgb(255, 74, 74)">Seconds: %d</font>', v.Name, v.UserId, Time), 15, getgenv().AntiSpy["Sounds"]["Warning"])
-							
-							AntiSpy:AddFlag(v, "Maximum_Absence")
-						end
-					end
-				elseif not CheckWhitelist(v) then
-					if PlayerInfo["LastCFrame"]["CFrame"] ~= RoundCFrame(CFrame.new(v.Character.PrimaryPart.Position)) then
-						PlayerInfo["LastCFrame"] = {
-							["CFrame"] = RoundCFrame(CFrame.new(v.Character.PrimaryPart.Position)),
-							["Time"] = tick()
-						}
-					else
-						if CheckActivity(PlayerInfo) == false then
-							local Time = GetTime(PlayerInfo["LastCFrame"]["Time"])
-							PlayerInfo["LastCFrame"] = {
-								["CFrame"] = RoundCFrame(CFrame.new(v.Character.PrimaryPart.Position)),
-								["Time"] = tick()
-							}
-							UI:Notify(string.format('%s (%d) has been absent for %d seconds!', v.Name, v.UserId, Time), 10, getgenv().AntiSpy["Sounds"]["Normal"])
-							
-							AntiSpy:AddFlag(v, "Maximum_Absence")
-						end
-					end
-				end
+                if v ~= game:GetService("Players").LocalPlayer then 
+                    if not PlayerInfo["LastCFrame"]["CFrame"] and not PlayerInfo["LastCFrame"]["Time"] then
+                        PlayerInfo["LastCFrame"] = {
+                            ["CFrame"] = nil,
+                            ["Time"] = nil
+                        }
+                    end
+                    
+                    if CheckBlacklist(v) then
+                        if PlayerInfo["LastCFrame"]["CFrame"] ~= RoundCFrame(CFrame.new(v.Character.PrimaryPart.Position)) then
+                            PlayerInfo["LastCFrame"] = {
+                                ["CFrame"] = RoundCFrame(CFrame.new(v.Character.PrimaryPart.Position)),
+                                ["Time"] = tick()
+                            }
+                        else
+                            if CheckActivity(PlayerInfo) == false then
+                                local Time = GetTime(PlayerInfo["LastCFrame"]["Time"])
+                                PlayerInfo["LastCFrame"] = {
+                                    ["CFrame"] = RoundCFrame(CFrame.new(v.Character.PrimaryPart.Position)),
+                                    ["Time"] = tick()
+                                }
+                                UI:Notify(string.format('A <font color="rgb(255, 74, 74)">blacklisted</font> player has been absent for the maximum amount of seconds!\n<font color="rgb(255, 74, 74)">%s (%d)</font>\n<font color="rgb(255, 74, 74)">Seconds: %d</font>', v.Name, v.UserId, Time), 15, getgenv().AntiSpy["Sounds"]["Warning"])
+                                
+                                AntiSpy:AddFlag(v, "Maximum_Absence")
+                            end
+                        end
+                    elseif not CheckWhitelist(v) then
+                        if PlayerInfo["LastCFrame"]["CFrame"] ~= RoundCFrame(CFrame.new(v.Character.PrimaryPart.Position)) then
+                            PlayerInfo["LastCFrame"] = {
+                                ["CFrame"] = RoundCFrame(CFrame.new(v.Character.PrimaryPart.Position)),
+                                ["Time"] = tick()
+                            }
+                        else
+                            if CheckActivity(PlayerInfo) == false then
+                                local Time = GetTime(PlayerInfo["LastCFrame"]["Time"])
+                                PlayerInfo["LastCFrame"] = {
+                                    ["CFrame"] = RoundCFrame(CFrame.new(v.Character.PrimaryPart.Position)),
+                                    ["Time"] = tick()
+                                }
+                                UI:Notify(string.format('%s (%d) has been absent for %d seconds!', v.Name, v.UserId, Time), 10, getgenv().AntiSpy["Sounds"]["Normal"])
+                                
+                                AntiSpy:AddFlag(v, "Maximum_Absence")
+                            end
+                        end
+                    end
+                end
 			end
 		end
 	end
