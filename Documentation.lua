@@ -6,10 +6,10 @@ getgenv().AntiSpy = {
 	["Whitelist"] = {},
 	["Blacklist"] = {
 		["Players"] = {
-			3053271710
+			
 		},
 		["Accessories"] = {
-			"Pal Hair"
+			
 		}
 	},
 	["Kick"] = {
