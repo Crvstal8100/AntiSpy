@@ -160,10 +160,7 @@ function AntiSpy:ClearFlags(player, flag)
 	end
 end
 
-for i, v in pairs(game:GetService("Players"):GetPlayers()) do
-	Setup(v)
-	
-	local Friends = GetFriendsInServer()
+local Friends = GetFriendsInServer()
 	local OtherPlayers = (#game:GetService("Players"):GetPlayers() - #Friends) - 1
 	
 	if #Friends > 0 then
@@ -197,6 +194,9 @@ for i, v in pairs(game:GetService("Players"):GetPlayers()) do
 			UI:Notify('There are <font color="rgb(255, 74, 74)">no</font> friends and <font color="rgb(255, 74, 74)">no</font> other players in your server!', 5, getgenv().AntiSpy["Sounds"]["Normal"])
 		end
 	end
+
+for i, v in pairs(game:GetService("Players"):GetPlayers()) do
+	Setup(v)
 	
 	task.delay(2, function()
 		for i, v in pairs(game:GetService("Players"):GetPlayers()) do
